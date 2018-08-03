@@ -4,13 +4,12 @@
 
 #define CHANNEL 0
 #define ROWS 8
-#define MATRIXES 0
+#define MATRIXES 4
 
 struct Matrix {
     std::uint8_t rows[ROWS];
     char letter;
 };
-
 
 static unsigned char lookup[16] = {
         0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
@@ -49,11 +48,10 @@ void showbits(std::uint8_t x)
 
 }
 
-
 Matrix scroll(Matrix &matrix, Matrix &prest) {
     Matrix temp;
     for (int i = 0; i < ROWS; i++) {
-        std::uint8_t rest = (matrix.rows[i]) & 0x80 >> 7;
+        std::uint8_t rest = (matrix.rows[i] & 0x80) >> 7;
         if (rest > 0) {
        //     std::cout << "FOUND:" << i << "-"; showbits(rest); std::cout << std::endl;
         }
@@ -111,31 +109,16 @@ int main(int argc, char** argv) {
     for (int i = 0; i < ROWS; i++) {
         rest.rows[i] = 0;
     }
-    for (int i = (MATRIXES + text.length() - 1) * 8; i >= 0; i--) {
-        rest = scroll(buffer[i], rest);
-  //      std::cout << "REST:"; showbits(rest.rows[5]); std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    printAll(buffer, text.length());
 
-    for (int i = (MATRIXES + text.length() - 1) * 8; i >= 0; i--) {
-        rest = scroll(buffer[i], rest);
-    }
-    std::cout << std::endl;
-    printAll(buffer, text.length());
+    for (int k = 0; k < 30; k++) {
+        for (int i = (MATRIXES + text.length() - 1) * 8; i >= 0; i--) {
+            rest = scroll(buffer[i], rest);
+            //      std::cout << "REST:"; showbits(rest.rows[5]); std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        printAll(buffer, text.length());
 
-    for (int i = (MATRIXES + text.length() - 1) * 8; i >= 0; i--) {
-        rest = scroll(buffer[i], rest);
     }
-    std::cout << std::endl;
-    printAll(buffer, text.length());
-
-    for (int i = (MATRIXES + text.length() - 1) * 8; i >= 0; i--) {
-        rest = scroll(buffer[i], rest);
-    }
-    std::cout << std::endl;
-    printAll(buffer, text.length());
-
     //for (;;) {
       //  scroll(bits);
     //}
