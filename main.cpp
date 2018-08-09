@@ -33,7 +33,7 @@ void setupBits(std::string text, Matrix* matrix) {
         const uint8_t* bit = &font[c * 8];
 
         for (int j = 0; j < ROWS; j++) {
-            matrix[i].rows[j] = reverse(bit[j]);
+            matrix[i].rows[j] = bit[j];//reverse(bit[j]);
         }
         matrix[i].letter = c;
     }
@@ -44,17 +44,13 @@ void showbits(std::uint8_t x)
     int i;
     for(i=(sizeof(uint8_t)*8)-1; i>=0; i--)
         (x&(1u<<i))?putchar('1'):putchar('0');
-
-
 }
 
 Matrix scroll(Matrix &matrix, Matrix &prest) {
     Matrix temp;
     for (int i = 0; i < ROWS; i++) {
         std::uint8_t rest = (matrix.rows[i] & 0x80) >> 7;
-        if (rest > 0) {
-       //     std::cout << "FOUND:" << i << "-"; showbits(rest); std::cout << std::endl;
-        }
+
         matrix.rows[i] <<= 1;
         matrix.rows[i] += prest.rows[i];
         temp.rows[i] = rest;
@@ -95,6 +91,13 @@ int main(int argc, char** argv) {
    //     showbits(bits[i]);
    // }
 
+    // clean buffer
+    for (int i = 0; i < MATRIXES + text.length(); i++) {
+        for (int j = 0; j < ROWS; j++) {
+            buffer[i].rows[j] = 0;
+        }
+    }
+
     // fill off screen buffer
     for (int i = MATRIXES, k = 0; i < text.length() + MATRIXES; i++, k++) {
         for (int j = 0; j < ROWS; j++) {
@@ -111,9 +114,8 @@ int main(int argc, char** argv) {
     }
 
     for (int k = 0; k < 30; k++) {
-        for (int i = (MATRIXES + text.length() - 1) * 8; i >= 0; i--) {
+        for (int i = (MATRIXES + text.length() - 1); i >= 0; i--) {
             rest = scroll(buffer[i], rest);
-            //      std::cout << "REST:"; showbits(rest.rows[5]); std::cout << std::endl;
         }
         std::cout << std::endl;
         printAll(buffer, text.length());
