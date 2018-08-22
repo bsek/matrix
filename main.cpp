@@ -1,10 +1,17 @@
 #include <iostream>
 #include <cstring>
+#include <unistd.h>
 #include "font.h"
+
+#include <wiringPiSPI.h>
 
 #define CHANNEL 0
 #define ROWS 8
-#define MATRIXES 4
+#define MATRIXES 2
+
+uint8_t buf[4];
+
+void showbits(uint8_t val);
 
 struct Matrix {
     std::uint8_t rows[ROWS];
@@ -20,11 +27,26 @@ uint8_t reverse(std::uint8_t n) {
     return (lookup[n&0b1111] << 4) | lookup[n>>4];
 }
 
+void display(Matrix *matrix, int len) {
+	for (int i = 0; i < ROWS; i++) {
+		for (int j = 0; j < 4; ) {
+			buf[j++] = i+1;
+			buf[j++] = reverse(matrix[j].rows[i]);
+			
+			std::cout << "Buff reg:"; showbits(buf[j-2]); std::cout << " val:"; showbits(buf[j-1]); std::cout << std::endl;
+		}
+
+		wiringPiSPIDataRW(CHANNEL, buf, 4);
+
+		std::cout << "display" << std::endl;
+	}
+}
+
 void setupLEDMatrix(int channel) {
-    // if (wiringPiSPISetup(CHANNEL, 1000000) < 0) {
-    //     fprintf (stderr, "SPI Setup failed: %s\n", strerror (errno));
-    //     exit(errno);
-    // }
+    if (wiringPiSPISetup(CHANNEL, 1000000) < 0) {
+        fprintf (stderr, "SPI Setup failed: %s\n", strerror (errno));
+        exit(errno);
+    }
 }
 
 void setupBits(std::string text, Matrix* matrix) {
@@ -105,8 +127,8 @@ int main(int argc, char** argv) {
         }
     }
 
-    printAll(buffer, text.length());
-
+ //   printAll(buffer, text.length());
+ //   display(buffer, text.length());
 
     Matrix rest;
     for (int i = 0; i < ROWS; i++) {
@@ -117,10 +139,12 @@ int main(int argc, char** argv) {
         for (int i = (MATRIXES + text.length() - 1); i >= 0; i--) {
             rest = scroll(buffer[i], rest);
         }
-        std::cout << std::endl;
-        printAll(buffer, text.length());
-
+     //   std::cout << std::endl;
+     //   printAll(buffer, text.length());
+	sleep(2);
+    	display(buffer, text.length());
     }
+
     //for (;;) {
       //  scroll(bits);
     //}
