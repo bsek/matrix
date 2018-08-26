@@ -7,9 +7,7 @@
 
 #define CHANNEL 0
 #define ROWS 8
-#define MATRIXES 2
-
-uint8_t buf[4];
+#define MATRIXES 6
 
 void showbits(uint8_t val);
 
@@ -28,25 +26,33 @@ uint8_t reverse(std::uint8_t n) {
 }
 
 void display(Matrix *matrix, int len) {
-	for (int i = 0; i < ROWS; i++) {
-		for (int j = 0; j < 4; ) {
-			buf[j++] = i+1;
-			buf[j++] = reverse(matrix[j].rows[i]);
-			
-			std::cout << "Buff reg:"; showbits(buf[j-2]); std::cout << " val:"; showbits(buf[j-1]); std::cout << std::endl;
+	uint8_t buf[MATRIXES * 2]; 
+	for (int row = 0; row < ROWS; row++) {
+		int selectedLetter = 0;
+		for (int k = 0, j = 0; k < MATRIXES; k++ ) {
+			buf[j++] = row+1;
+			buf[j++] = reverse(matrix[selectedLetter++].rows[row]);
 		}
-
-		wiringPiSPIDataRW(CHANNEL, buf, 4);
-
-		std::cout << "display" << std::endl;
+		wiringPiSPIDataRW(CHANNEL, buf, MATRIXES * 2);
 	}
 }
 
+void spi(uint8_t reg, uint8_t val) {
+	uint8_t buf[2];
+	buf[0] = reg;
+	buf[1] = val;
+	wiringPiSPIDataRW(CHANNEL, buf, 2); 
+}
+
 void setupLEDMatrix(int channel) {
-    if (wiringPiSPISetup(CHANNEL, 1000000) < 0) {
+    if (wiringPiSPISetup(channel, 1000000) < 0) {
         fprintf (stderr, "SPI Setup failed: %s\n", strerror (errno));
         exit(errno);
     }
+    spi(0x09,0x00);
+    spi(0x0B,0x07);
+    spi(0x0A,0xFF);
+    spi(0x0C,0x01);
 }
 
 void setupBits(std::string text, Matrix* matrix) {
@@ -109,10 +115,6 @@ int main(int argc, char** argv) {
     // copy bits from font to initial buffer
     setupBits(text, bits);
 
-   // for (int i = 0; i < text.length() * 8; i++) {
-   //     showbits(bits[i]);
-   // }
-
     // clean buffer
     for (int i = 0; i < MATRIXES + text.length(); i++) {
         for (int j = 0; j < ROWS; j++) {
@@ -127,27 +129,19 @@ int main(int argc, char** argv) {
         }
     }
 
- //   printAll(buffer, text.length());
- //   display(buffer, text.length());
-
     Matrix rest;
     for (int i = 0; i < ROWS; i++) {
         rest.rows[i] = 0;
     }
 
-    for (int k = 0; k < 30; k++) {
+    while(true) {
         for (int i = (MATRIXES + text.length() - 1); i >= 0; i--) {
             rest = scroll(buffer[i], rest);
         }
-     //   std::cout << std::endl;
-     //   printAll(buffer, text.length());
-	sleep(2);
+	usleep(50000);
     	display(buffer, text.length());
     }
 
-    //for (;;) {
-      //  scroll(bits);
-    //}
     return 0;
 }
 
