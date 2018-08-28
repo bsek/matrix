@@ -3,6 +3,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <utility>
+#include <nlohmann/json.hpp>
 #include "font.h"
 
 static unsigned char lookup[16] = {

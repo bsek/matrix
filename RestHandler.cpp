@@ -1,14 +1,22 @@
 #include <future>
 #include <iostream>
 #include "RestHandler.h"
+#include <nlohmann/json.hpp>
 
 void RestHandler::setup() {
-    mux.handle("/hello").get([&](served::response &res, const served::request &req) {
-        res << "world";
-        std::string s{"Hello world"};
-        //std::future<void> result( std::async(RestHandler::scroller.setupText(1, s)));
-        std::future<void> result(std::async([&]() { RestHandler::scroller.setupText(1, s); }));
-        result.get();
+    mux.handle("/start").post([&](served::response &res, const served::request &req) {
+        res << "Scroll started";
+        std::thread result([&]() {
+            auto message = nlohmann::json::parse(req.body());
+            auto str = message.at("message").get<std::string>();
+            scroller.setupText(3, str);
+        });
+        result.detach();
+    });
+
+    mux.handle("/stop").post([&](served::response &res, const served::request &req) {
+        res << "Scroll stopped";
+        scroller.setRun(false);
     });
 }
 
