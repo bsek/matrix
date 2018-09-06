@@ -1,5 +1,9 @@
 #include <string>
+#include <mutex>
+
+#ifdef __arm__
 #include <wiringPi.h>
+#endif
 
 #ifndef SPI_SCROLLER_H
 #define SPI_SCROLLER_H
@@ -14,7 +18,8 @@ struct Matrix {
 };
 
 class Scroller {
-    
+
+    std::mutex run_mutex;
     bool run;
 
     void doScroll(int times, Matrix *buffer, std::string &text);
@@ -28,6 +33,7 @@ class Scroller {
 public:
     void setupText(int times, std::string &text);
     void setRun(bool run);
+    bool isRunning();
 #ifdef __arm__
     void setupLEDMatrix(int channel);
     void setSPIValue(uint8_t reg, uint8_t val);

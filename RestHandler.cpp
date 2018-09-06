@@ -3,26 +3,47 @@
 #include "RestHandler.h"
 #include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
+
 void RestHandler::setup() {
     mux.handle("/start").post([&](served::response &res, const served::request &req) {
-        res << "Scroll started";
-	std::cout << "Received message:" << req.body() << std::endl;
+        if (scroller.isRunning()) {
+            scroller.setRun(false);
+        }
 
-	auto receivedMessage = req.body();
+        res << "Scroll started";
+        std::cout << "Received message:" << req.body() << std::endl;
+
+        auto receivedMessage = req.body();
 
         std::thread result([&](std::string message) {
-		try {
-			json::parse("[1,2,3,]");
-		} catch (json::parse_error& e) {
-			std::cout << "message: " << e.what() << '\n'
-			<< "exception id: " << e.id << '\n'
-			<< "byte position of error: " << e.byte << std::endl;
-		}
+            json parsedMessage = nullptr;
 
-            auto parsedMessage = nlohmann::json::parse(message);
-            auto str = parsedMessage.at("message").get<std::string>();
-            scroller.setupText(3, str);
+            try {
+                parsedMessage = json::parse(message);
+            } catch (json::parse_error &e) {
+                std::cout << "message: " << e.what() << '\n'
+                          << "exception id: " << e.id << '\n'
+                          << "byte position of error: " << e.byte << std::endl;
+            }
+            
+            
+            if (parsedMessage != nullptr) {
+                try {
+                    auto str = parsedMessage.at("message").get<std::string>();
+                    auto times = 3;
+
+                    if (parsedMessage.find("times") != parsedMessage.end()) {
+                        times = parsedMessage.at("times").get<std::int32_t>();
+                    }
+                    scroller.setupText(times, str);
+                } catch (json::out_of_range& e) {
+                    std::cout << "message: " << e.what() << '\n'
+                              << "exception id: " << e.id << std::endl;
+                }
+            }
         }, receivedMessage);
+
         result.detach();
     });
 

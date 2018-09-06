@@ -4,13 +4,10 @@
 #include <cstring>
 #include <unistd.h>
 #include <utility>
+#ifdef __arm__
 #include <wiringPiSPI.h>
+#endif
 #include "font.h"
-
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-	    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
 static unsigned char lookup[16] = {
         0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
@@ -39,6 +36,9 @@ void Scroller::printAll(Matrix *buffer, int len) {
 }
 
 void Scroller::display(Matrix *matrix, int len) {
+#ifndef __arm__
+    printAll(matrix, len);
+#else
     uint8_t buf[MATRIXES * 2];
     for (int row = 0; row < ROWS; row++) {
         int selectedLetter = 0;
@@ -46,11 +46,8 @@ void Scroller::display(Matrix *matrix, int len) {
             buf[j++] = row+1;
             buf[j++] = reverse(matrix[selectedLetter++].rows[row]);
         }
-#ifdef __arm__
         wiringPiSPIDataRW(CHANNEL, buf, MATRIXES * 2);
-#endif
     }
-#ifndef __arm__
     printAll(matrix, len);
 #endif
 }
@@ -128,6 +125,7 @@ void Scroller::doScroll(int times, Matrix *buffer, std::string &text) {
 }
 
 void Scroller::setRun(bool run) {
+    std::lock_guard<std::mutex> lock(run_mutex);
     Scroller::run = run;
 }
 
@@ -160,3 +158,6 @@ void Scroller::setupText(int times, std::string &text) {
 
 }
 
+bool Scroller::isRunning() {
+    return run;
+}
