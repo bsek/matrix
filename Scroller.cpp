@@ -1,10 +1,16 @@
 #include "Scroller.h"
+#include <memory>
 #include <iostream>
 #include <cstring>
 #include <unistd.h>
 #include <utility>
-#include <nlohmann/json.hpp>
+#include <wiringPiSPI.h>
 #include "font.h"
+
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+	    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 static unsigned char lookup[16] = {
         0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
@@ -40,16 +46,16 @@ void Scroller::display(Matrix *matrix, int len) {
             buf[j++] = row+1;
             buf[j++] = reverse(matrix[selectedLetter++].rows[row]);
         }
-#ifdef RPI
+#ifdef __arm__
         wiringPiSPIDataRW(CHANNEL, buf, MATRIXES * 2);
 #endif
     }
-#ifndef RPI
+#ifndef __arm__
     printAll(matrix, len);
 #endif
 }
 
-#ifdef RPI
+#ifdef __arm__
 void Scroller::setSPIValue(uint8_t reg, uint8_t val) {
 	uint8_t buf[2];
 	buf[0] = reg;
@@ -151,5 +157,6 @@ void Scroller::setupText(int times, std::string &text) {
     run = true;
 
     doScroll(times, buffer.get(), text);
+
 }
 

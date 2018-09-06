@@ -1,11 +1,12 @@
 #include <string>
+#include <wiringPi.h>
 
 #ifndef SPI_SCROLLER_H
 #define SPI_SCROLLER_H
 
 #define CHANNEL 0
 #define ROWS 8
-#define MATRIXES 6
+#define MATRIXES 9
 
 struct Matrix {
     std::uint8_t rows[ROWS];
@@ -13,7 +14,7 @@ struct Matrix {
 };
 
 class Scroller {
-private:
+    
     bool run;
 
     void doScroll(int times, Matrix *buffer, std::string &text);
@@ -27,7 +28,7 @@ private:
 public:
     void setupText(int times, std::string &text);
     void setRun(bool run);
-#ifdef RPI
+#ifdef __arm__
     void setupLEDMatrix(int channel);
     void setSPIValue(uint8_t reg, uint8_t val);
 #endif

@@ -10,7 +10,6 @@ if(NOT APPLE)
 endif()
 
 add_subdirectory(served)
-add_subdirectory(json)
 
 find_package(Boost 1.53 COMPONENTS "system" REQUIRED)
 

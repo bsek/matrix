@@ -2,14 +2,9 @@
 #include "RestHandler.h"
 #include "Scroller.h"
 
-#ifdef RPI
-#include <wiringPiSPI.h>
-#endif
-
 void signalHandler(int s){
     printf("Caught signal %d\n",s);
     exit(1);
-
 }
 
 int main(int argc, char** argv) {
@@ -25,7 +20,7 @@ int main(int argc, char** argv) {
 
     Scroller scroller;
 
-#ifdef RPI
+#ifdef __arm__
     scroller.setupLEDMatrix(CHANNEL);
 #endif
 
