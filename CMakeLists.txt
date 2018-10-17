@@ -9,6 +9,8 @@ if(NOT APPLE)
     set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lwiringPi")
 endif()
 
+set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -liconv")
+
 add_subdirectory(served)
 
 find_package(Boost 1.53 COMPONENTS "system" REQUIRED)
