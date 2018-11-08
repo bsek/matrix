@@ -1,5 +1,6 @@
 #include <string>
 #include <mutex>
+#include <vector>
 
 #ifdef __arm__
 #include <wiringPi.h>
@@ -22,16 +23,16 @@ class Scroller {
     std::mutex run_mutex;
     bool run;
 
-    void doScroll(int times, Matrix *buffer, std::string &text);
+    void doScroll(int times, Matrix *buffer, const std::vector<int> &text);
     Matrix scroll(Matrix &matrix, Matrix &prest);
-    void setupBits(std::string text, Matrix* matrix);
+    void setupBits(std::vector<int> text, Matrix* matrix);
     void display(Matrix *matrix, int len);
     void printAll(Matrix *buffer, int len);
     void showBits(std::uint8_t x);
     uint8_t reverse(std::uint8_t n);
 
 public:
-    void setupText(int times, std::string &text);
+    void setupText(int times, const std::vector<int> &str);
     void setRun(bool run);
     bool isRunning();
 #ifdef __arm__

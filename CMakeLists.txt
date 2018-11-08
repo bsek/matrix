@@ -18,7 +18,9 @@ find_package(Boost 1.53 COMPONENTS "system" REQUIRED)
 if(Boost_FOUND)
     add_executable(spi main.cpp font.h RestHandler.cpp RestHandler.h Scroller.cpp Scroller.h )
     target_link_libraries(spi served ${Boost_LIBRARIES})
-    target_include_directories(spi PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/served/src/>"
-                                          "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/json/single_include>")
+    target_include_directories(spi PRIVATE
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/served/src/>"
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/json/single_include>"
+            ${Boost_INCLUDE_DIRS})
 endif()
 

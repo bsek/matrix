@@ -1,35 +1,43 @@
 #include <future>
 #include <iostream>
-#include <iconv.h>
 #include <type_traits>
+#include <vector>
+#include <codecvt>
+#include <stdlib.h>
+
 #include "RestHandler.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-char * convertUtf8toAscii(std::string &input) {
-    size_t inbytes = input.length();
-    char *dest_str = new char[inbytes];
-    char *input_str = new char[inbytes];
-    strcpy(input_str, input.c_str());
+std::wstring utf8_to_wstring(const std::string &str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
+    return myconv.from_bytes(str);
+}
 
-    char *dest = dest_str;
+#include <iconv.h>
 
+std::string convert(const char * input) {
+    char dest_str[255];
+    char *out = dest_str;
+
+    size_t inbytes = strlen(input);
     size_t outbytes = sizeof dest_str;
-    iconv_t conv = iconv_open("ISO8859-1", "UTF-8");
+    iconv_t conv = iconv_open("CP850//TRANSLIT", "UTF-8");
 
     if (conv == (iconv_t)-1) {
         perror("iconv_open");
-        return nullptr;
+        return "";
     }
 
-    if (iconv(conv, &input_str, &inbytes, &dest, &outbytes) == (size_t)-1) {
+    char * i = const_cast<char *>(input);
+
+    if (iconv(conv, &i, &inbytes, &out, &outbytes) == (size_t)-1) {
         perror("iconv");
-        return nullptr;
+        return "";
     }
 
     dest_str[sizeof dest_str - outbytes] = 0;
-    puts(dest_str);
 
     return dest_str;
 }
@@ -60,16 +68,24 @@ void RestHandler::setup() {
             if (parsedMessage != nullptr) {
                 try {
                     std::string str = parsedMessage.at("message").get<std::string>();
+                    auto convertedText = convert(str.c_str());
+
+                    std::vector<int> text;
+
+                    for (auto character : convertedText) {
+                        unsigned char ch = static_cast<unsigned char>(character);
+                        if (ch <= 254) {
+                            text.push_back(ch);
+                        }
+                    }
+
                     auto times = 3;
 
                     if (parsedMessage.find("times") != parsedMessage.end()) {
                         times = parsedMessage.at("times").get<std::int32_t>();
                     }
-                    char * text = convertUtf8toAscii(str);
-                    //char * text = new char[str.length()];
-                    //strcpy(text, str.c_str());
-                    std::string inputStr(text);
-                    scroller.setupText(times, inputStr);
+
+                    scroller.setupText(times, text);
                 } catch (json::out_of_range& e) {
                     std::cout << "message: " << e.what() << '\n'
                               << "exception id: " << e.id << std::endl;
