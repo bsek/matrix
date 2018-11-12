@@ -2,9 +2,7 @@
 #include <mutex>
 #include <vector>
 
-#ifdef __arm__
 #include <wiringPi.h>
-#endif
 
 #ifndef SPI_SCROLLER_H
 #define SPI_SCROLLER_H
@@ -35,10 +33,8 @@ public:
     void setupText(int times, const std::vector<int> &str);
     void setRun(bool run);
     bool isRunning();
-#ifdef __arm__
     void setupLEDMatrix(int channel);
     void setSPIValue(uint8_t reg, uint8_t val);
-#endif
 
 };
 

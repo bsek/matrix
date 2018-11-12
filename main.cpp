@@ -20,9 +20,7 @@ int main(int argc, char** argv) {
 
     Scroller scroller;
 
-#ifdef __arm__
     scroller.setupLEDMatrix(CHANNEL);
-#endif
 
     RestHandler restHandler{scroller};
     restHandler.setup();

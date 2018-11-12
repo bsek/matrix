@@ -4,9 +4,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <utility>
-#ifdef __arm__
 #include <wiringPiSPI.h>
-#endif
 #include "font.h"
 
 static unsigned char lookup[16] = {
@@ -35,9 +33,6 @@ void Scroller::printAll(Matrix *buffer, int len) {
 }
 
 void Scroller::display(Matrix *matrix, int len) {
-#ifndef __arm__
-    printAll(matrix, len);
-#else
     uint8_t buf[MATRIXES * 2];
     for (int row = 0; row < ROWS; row++) {
         int selectedLetter = 0;
@@ -48,10 +43,8 @@ void Scroller::display(Matrix *matrix, int len) {
         wiringPiSPIDataRW(CHANNEL, buf, MATRIXES * 2);
     }
     printAll(matrix, len);
-#endif
 }
 
-#ifdef __arm__
 void Scroller::setSPIValue(uint8_t reg, uint8_t val) {
 	uint8_t buf[2];
 	buf[0] = reg;
@@ -72,7 +65,6 @@ void Scroller::setupLEDMatrix(int channel) {
     setSPIValue(0x0A,0xFF);
     setSPIValue(0x0C,0x01);
 }
-#endif
 
 void Scroller::setupBits(std::vector<int> text, Matrix* matrix) {
     for (int i = 0; i < text.size(); i++) {

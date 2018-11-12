@@ -10,11 +10,6 @@
 
 using json = nlohmann::json;
 
-std::wstring utf8_to_wstring(const std::string &str) {
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> myconv;
-    return myconv.from_bytes(str);
-}
-
 #include <iconv.h>
 
 std::string convert(const char * input) {
@@ -74,9 +69,7 @@ void RestHandler::setup() {
 
                     for (auto character : convertedText) {
                         unsigned char ch = static_cast<unsigned char>(character);
-                        if (ch <= 254) {
-                            text.push_back(ch);
-                        }
+			text.push_back(ch);
                     }
 
                     auto times = 3;
