@@ -2,7 +2,7 @@
 #include <mutex>
 #include <vector>
 
-#include <wiringPi.h>
+//#include <wiringPi.h>
 
 #ifndef SPI_SCROLLER_H
 #define SPI_SCROLLER_H
