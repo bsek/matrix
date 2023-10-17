@@ -4,8 +4,8 @@ CFLAGS = -Wall
 LDFLAGS = -lwiringPi -liconv
 
 # Source files and executable
-SOURCES = your_program.c
-EXECUTABLE = your_program
+SOURCES = main.c
+EXECUTABLE = matrix
 
 all: $(EXECUTABLE)
 
