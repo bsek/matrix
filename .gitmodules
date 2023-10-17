@@ -1,6 +1,0 @@
-[submodule "served"]
-	path = served
-	url = https://github.com/meltwater/served.git
-[submodule "json"]
-	path = json
-	url = https://github.com/nlohmann/json.git
