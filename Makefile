@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
 CFLAGS = -Wall
-LDFLAGS = -lwiringPi -liconv
+LDFLAGS = -lwiringPi
 
 # Source files and executable
 SOURCES = main.c

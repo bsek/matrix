@@ -102,8 +102,8 @@ void setupLEDMatrix(int channel) {
   }
 }
 
-void setupBits(const char *text, struct Matrix *matrix) {
-  for (int i = 0; i < strlen(text); i++) {
+void setupBits(const char *text, struct Matrix *matrix, int len) {
+  for (int i = 0; i < len; i++) {
     const uint8_t *bit = &font[text[i] * 8];
 
     for (int j = 0; j < ROWS; j++) {
@@ -120,40 +120,14 @@ void display(struct Matrix *matrix, int len) {
       buf[j++] = row + 1;
       buf[j++] = reverse(matrix[selectedLetter++].rows[row]);
     }
-    int result = wiringPiSPIDataRW(CHANNEL, buf, MATRICES * 2);
-    printf("Wrote: %d", result);
+    wiringPiSPIDataRW(CHANNEL, buf, MATRICES * 2);
   }
-  printAll(matrix, len);
-}
-
-char *convert(const char *input) {
-  char dest_str[255];
-  char *out = dest_str;
-
-  size_t inbytes = strlen(input);
-  size_t outbytes = sizeof dest_str;
-  iconv_t conv = iconv_open("CP850//TRANSLIT", "UTF-8");
-
-  if (conv == (iconv_t)-1) {
-    perror("iconv_open");
-    return "";
-  }
-
-  char *i = (char *)input;
-
-  if (iconv(conv, &i, &inbytes, &out, &outbytes) == (size_t)-1) {
-    perror("iconv");
-    return "";
-  }
-
-  dest_str[sizeof(dest_str) - outbytes] = 0;
-
-  return strdup(dest_str);
+  // printAll(matrix, len);
 }
 
 char *getTimeAsString(const struct tm *timeinfo) {
   char timeString[9];
-  snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d", timeinfo->tm_hour,
+  snprintf(timeString, sizeof(timeString), " %02d:%02d:%02d", timeinfo->tm_hour,
            timeinfo->tm_min, timeinfo->tm_sec);
 
   return strdup(timeString);
@@ -198,10 +172,6 @@ int main(int argc, char **argv) {
   timeinfo.tm_min = 0;
   timeinfo.tm_sec = 0;
 
-  const char *text = "Hello wor";
-
-  uint32_t size = strlen(text);
-
   // create buffer for initial values
   struct Matrix bits[MATRICES];
 
@@ -209,11 +179,13 @@ int main(int argc, char **argv) {
     time_t start_time = time(NULL);
 
     char *text = getTimeAsString(&timeinfo);
+    int len = strlen(text);
 
     // copy bits from font to initial buffer
-    setupBits(text, bits);
+    setupBits(text, bits, len);
 
-    display(bits, size);
+    display(bits, len);
+
     sleep(1);
 
     time_t end_time = time(NULL);
